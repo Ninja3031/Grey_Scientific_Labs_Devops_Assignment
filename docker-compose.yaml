@@ -1,0 +1,93 @@
+version: "3.9"
+
+services:
+
+  backend:
+    image: backend-app:latest
+    build: ./backend
+    restart: always
+
+    # High Availability (container replicas)
+    deploy:
+      replicas: 2
+
+    environment:
+      - DB_HOST=database
+      - DB_USER=appuser
+      - DB_PASSWORD=apppassword
+
+    ports:
+      - "8080"
+
+    depends_on:
+      - database
+
+    networks:
+      - app-network
+
+    # Health checks can be enabled in production
+    # healthcheck:
+    #   test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+    #   interval: 30s
+    #   retries: 3
+
+
+  frontend:
+    image: frontend-app:latest
+    build: ./frontend
+    restart: always
+
+    deploy:
+      replicas: 2
+
+    ports:
+      - "3000"
+
+    networks:
+      - app-network
+
+
+  database:
+    image: postgres:15
+    restart: always
+
+    environment:
+      POSTGRES_DB: appdb
+      POSTGRES_USER: appuser
+      POSTGRES_PASSWORD: apppassword
+
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+    ports:
+      - "5432:5432"   # Local debugging only
+
+    networks:
+      - app-network
+
+
+  # Optional caching layer (designed, not implemented)
+  # redis:
+  #   image: redis:7
+  #   restart: always
+  #   ports:
+  #     - "6379"
+  #   networks:
+  #     - app-network
+
+
+volumes:
+  db-data:
+
+
+networks:
+  app-network:
+    driver: bridge
+
+
+# Kubernetes Design Mapping (Reference Only)
+# frontend  -> Deployment + ClusterIP Service
+# backend   -> Deployment + ClusterIP Service
+# nginx     -> Ingress Controller
+# volumes   -> PersistentVolumeClaims

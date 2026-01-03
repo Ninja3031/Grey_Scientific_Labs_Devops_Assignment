@@ -1,0 +1,48 @@
+pipeline {
+    agent any
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                url: 'https://github.com/your-username/devops-assignment.git'
+            }
+        }
+
+        stage('Build Docker Images') {
+            steps {
+                sh '''
+                  docker build -t backend-app ./backend
+                  docker build -t frontend-app ./frontend
+                '''
+            }
+        }
+
+        stage('Run Containers') {
+            steps {
+                sh '''
+                  docker-compose up -d
+                  docker-compose ps
+                '''
+            }
+        }
+
+        stage('Cleanup') {
+            steps {
+                sh 'docker-compose down'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "CI/CD pipeline executed successfully"
+        }
+    }
+
+    // Future CI/CD Enhancements:
+    // - Blue/Green deployments
+    // - Canary releases
+    // - Rollbacks
+}
