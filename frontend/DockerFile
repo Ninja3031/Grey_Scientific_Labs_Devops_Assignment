@@ -1,9 +1,18 @@
+# Using a Node.js 20 with Alpine Linux for a lightweight image
+# Designed for containerized frontend deployment
+
 FROM node:20-alpine
 
+# Set working directory inside the container
 WORKDIR /app
 
+# Copy frontend source code into the container
+# In production, dependency files would be copied separately
 COPY . .
 
+# Expose frontend application port
 EXPOSE 3000
 
+# Starting the frontend application
+# Assumes `npm start` is defined in package.json
 CMD ["npm", "start"]

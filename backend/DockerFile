@@ -3,8 +3,20 @@ FROM openjdk:21-jdk-slim
 WORKDIR /app
 
 # Placeholder – no actual app logic required
+
+#copying everything from my backedn folder into the containers directory
+
+#assumung that the app.jar is already build 
 COPY . .
 
+#which port to use
 EXPOSE 8080
 
+#Use of CMD
+# 1.Starts your Java backend
+# 2.Runs in the foreground
+# 3.Keeps the container alive
 CMD ["java", "-jar", "app.jar"]
+
+#Over all here This Dockerfile packages a Java backend using OpenJDK 21, sets a working directory, copies application artifacts, 
+#exposes the service port, and runs the application as a containerized Java process.

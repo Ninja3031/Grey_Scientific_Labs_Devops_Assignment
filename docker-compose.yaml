@@ -1,42 +1,60 @@
+# This file demonstrates containerized application design with
+# scalability, high availability, and production-readiness concepts.
+# Some features (replicas, caching) are intentionally shown as design intent.
 version: "3.9"
+
+# Application Services
 
 services:
 
   backend:
+    # Backend service (API layer)
+    # Handles business logic and communicates with the database
     image: backend-app:latest
     build: ./backend
     restart: always
 
-    # High Availability (container replicas)
+    # Swarm style scaling configuration
+    # Demonstrates horizontal scaling / high availability concept
+    # (Effective in Docker Swarm or Kubernetes, not standalone docker-compose)
     deploy:
       replicas: 2
 
+    # Environment variables injected for configuration management
+    # In production, secrets should be managed using Vault / AWS Secrets Manager
     environment:
       - DB_HOST=database
       - DB_USER=appuser
       - DB_PASSWORD=apppassword
 
+    # Exposes container port for internal networking
+    # External access is typically handled via Nginx / Load Balancer
     ports:
       - "8080"
 
+    # Ensures database container starts before backend
     depends_on:
       - database
 
     networks:
       - app-network
 
-    # Health checks can be enabled in production
+    # Health checks can be enabled in production 
     # healthcheck:
     #   test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
     #   interval: 30s
     #   retries: 3
 
 
+  # Frontend service (UI layer)
+  # Serves the client-side application
   frontend:
     image: frontend-app:latest
     build: ./frontend
     restart: always
 
+    # Multiple replicas simulate load distribution
+    # In real-world setups, traffic is balanced using Nginx / ALB / Ingress
     deploy:
       replicas: 2
 
@@ -47,6 +65,8 @@ services:
       - app-network
 
 
+  # Database service
+  # Uses PostgreSQL with persistent storage
   database:
     image: postgres:15
     restart: always
@@ -56,6 +76,7 @@ services:
       POSTGRES_USER: appuser
       POSTGRES_PASSWORD: apppassword
 
+    # Persistent volumes ensure data survives container restarts
     volumes:
       - db-data:/var/lib/postgresql/data
       - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -67,7 +88,9 @@ services:
       - app-network
 
 
-  # Optional caching layer (designed, not implemented)
+  # Optional Redis cache layer
+  # Included to demonstrate system design awareness (caching strategy)
+  # Not enabled to keep the assignment simple and cost-free
   # redis:
   #   image: redis:7
   #   restart: always
@@ -76,17 +99,21 @@ services:
   #   networks:
   #     - app-network
 
+# Persistent Storage
 
 volumes:
   db-data:
 
+# Networking
 
+# Custom bridge network allows service-to-service communication
+# without exposing internal traffic externally
 networks:
   app-network:
     driver: bridge
 
-
-# Kubernetes Design Mapping (Reference Only)
+# Future Kubernetes Migration Reference
+# Shows how this Docker Compose design maps cleanly to Kubernetes primitives
 # frontend  -> Deployment + ClusterIP Service
 # backend   -> Deployment + ClusterIP Service
 # nginx     -> Ingress Controller

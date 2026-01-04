@@ -1,8 +1,15 @@
+// Automates code checkout, Docker image builds,
+// container orchestration, and cleanup.
+// Designed to demonstrate CI/CD fundamentals.
+
 pipeline {
+
+    // Allows pipeline to run on any available Jenkins agent
     agent any
 
     stages {
 
+        // Pull latest code from the main branch
         stage('Checkout') {
             steps {
                 git branch: 'main',
@@ -10,6 +17,7 @@ pipeline {
             }
         }
 
+        // This command builds Docker images for backend and frontend services
         stage('Build Docker Images') {
             steps {
                 sh '''
@@ -19,6 +27,7 @@ pipeline {
             }
         }
 
+        // Start application stack using Docker Compose
         stage('Run Containers') {
             steps {
                 sh '''
@@ -28,6 +37,7 @@ pipeline {
             }
         }
 
+        // Cleanup resources to avoid conflicts on shared CI agents
         stage('Cleanup') {
             steps {
                 sh 'docker-compose down'
@@ -35,14 +45,15 @@ pipeline {
         }
     }
 
+    // Post-build actions
     post {
         success {
             echo "CI/CD pipeline executed successfully"
         }
     }
 
-    // Future CI/CD Enhancements:
-    // - Blue/Green deployments
-    // - Canary releases
-    // - Rollbacks
+    // Future CI/CD Enhancements which can be done during actual deployment
+    // - Blue/Green deployments for zero downtime
+    // - Canary releases for controlled rollouts
+    // - Automated rollback strategies
 }
